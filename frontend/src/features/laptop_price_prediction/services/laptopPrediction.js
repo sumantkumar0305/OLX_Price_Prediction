@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const LAPTOP_PREDICT_URL = '/api/predict/laptop';
+const normalizeBaseUrl = (value = '') => value.replace(/\/+$/, '');
+const API_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL || '');
+const LAPTOP_PREDICT_URL = `${API_BASE_URL}/api/predict/laptop`;
 const SERVER_DOWN_MESSAGE =
   'Unable to reach the prediction server. Make sure the Flask backend is running on port 5000.';
 

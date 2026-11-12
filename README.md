@@ -161,6 +161,16 @@ npm install
 ### 5. Prepare ML Models
 Ensure `phone_price_prediction_model_second.pkl` and `laptop_price_prediction_model.pkl` are in `backend/`.
 
+### 6. Configure Environment Variables
+Copy the example env files and adjust values for your environment.
+
+```bash
+copy backend\.env.example backend\.env
+copy frontend\.env.example frontend\.env
+```
+
+For production deployments, set `VITE_API_BASE_URL` to the deployed backend origin (for example `https://your-backend.example.com`). Leave the value empty when the frontend and backend are served from the same origin.
+
 ---
 
 ## 💻 Running the Project
@@ -191,6 +201,18 @@ Frontend will run on: **http://localhost:5173**
 
 ### Access the Application
 Open your browser and go to: **http://localhost:5173**
+
+### Production deployment notes
+
+The backend is configured to bind on `0.0.0.0` and supports deployment via Gunicorn. A root `Procfile` is included for services such as Render/Heroku.
+
+```bash
+cd backend
+pip install -r requirements.txt
+gunicorn --bind 0.0.0.0:$PORT wsgi:app
+```
+
+The frontend build is generated through Vite and can be served from a static host or reverse proxy. Set `VITE_API_BASE_URL` when the API is on a different domain than the frontend.
 
 ### Run tests
 

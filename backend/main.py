@@ -53,24 +53,46 @@ LAPTOP_PROCESSORS = {
 }
 LAPTOP_STORAGE_TYPES = {"SSD", "Unspecified", "HDD", "NVMe"}
 
+
+def _load_model(file_name):
+    model_path = os.path.join(MODEL_DIR, file_name)
+    if not os.path.exists(model_path):
+        return None
+
+    try:
+        return joblib.load(model_path)
+    except Exception as exc:  # pragma: no cover - defensive for deployment
+        app.logger.warning("Could not load %s: %s", file_name, exc)
+        return None
+
+
 app = Flask(__name__)
 allowed_origins = [
     origin.strip()
     for origin in os.getenv(
-        "FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
+        "FRONTEND_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000",
     ).split(",")
     if origin.strip()
 ]
-CORS(app, origins=allowed_origins)
-
-phone_model = joblib.load(
-    os.path.join(MODEL_DIR, "phone_price_prediction_model_second.pkl")
-)
-laptop_model = joblib.load(
-    os.path.join(MODEL_DIR, "laptop_price_prediction_model.pkl")
+CORS(
+    app,
+    resources={r"/api/*": {"origins": allowed_origins}},
+    supports_credentials=True,
 )
 
-app.logger.info("Phone and laptop models loaded successfully.")
+phone_model = _load_model("phone_price_prediction_model_second.pkl")
+laptop_model = _load_model("laptop_price_prediction_model.pkl")
+
+if phone_model is not None:
+    app.logger.info("Phone model loaded successfully.")
+else:
+    app.logger.warning("Phone model file is missing or unreadable.")
+
+if laptop_model is not None:
+    app.logger.info("Laptop model loaded successfully.")
+else:
+    app.logger.warning("Laptop model file is missing or unreadable.")
 
 
 def _error(message, status_code):
@@ -174,6 +196,9 @@ def predict_phone():
         }
     )
 
+    if phone_model is None:
+        return _model_failure("Phone")
+
     try:
         prediction = float(phone_model.predict(input_data)[0])
         price = float(np.exp(prediction))
@@ -245,6 +270,9 @@ def predict_laptop():
         }
     )
 
+    if laptop_model is None:
+        return _model_failure("Laptop")
+
     try:
         prediction = float(laptop_model.predict(input_data)[0])
         predicted_price = float(np.exp(prediction))
@@ -268,6 +296,6 @@ def predict_laptop():
 if __name__ == "__main__":
     app.run(
         debug=os.getenv("FLASK_DEBUG", "false").strip().lower() == "true",
-        host=os.getenv("HOST", "127.0.0.1"),
+        host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", "5000")),
     )

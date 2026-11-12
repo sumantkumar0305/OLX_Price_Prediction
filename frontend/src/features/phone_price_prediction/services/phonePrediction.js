@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { validatePhoneForm } from '../utils/phoneValidation.js';
 
-const PHONE_PREDICT_URL = '/api/phone/predict';
+const normalizeBaseUrl = (value = '') => value.replace(/\/+$/, '');
+const API_BASE_URL = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL || '');
+const PHONE_PREDICT_URL = `${API_BASE_URL}/api/phone/predict`;
 const SERVER_DOWN_MESSAGE =
   'Unable to reach the prediction server. Make sure the Flask backend is running on port 5000.';
 
