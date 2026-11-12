@@ -169,7 +169,7 @@ copy backend\.env.example backend\.env
 copy frontend\.env.example frontend\.env
 ```
 
-For production deployments, set `VITE_API_BASE_URL` to the deployed backend origin (for example `https://your-backend.example.com`). Leave the value empty when the frontend and backend are served from the same origin.
+For production deployments, set `VITE_API_BASE_URL` to the deployed backend origin (for example `https://your-backend.example.com`). The production frontend configuration defaults to `https://backend-i0vo.onrender.com`; override it in the frontend build environment if you deploy a different backend. Leave the value empty when the frontend and backend are served from the same origin.
 
 ---
 
@@ -212,7 +212,7 @@ pip install -r requirements.txt
 gunicorn --bind 0.0.0.0:$PORT wsgi:app
 ```
 
-The frontend build is generated through Vite and can be served from a static host or reverse proxy. Set `VITE_API_BASE_URL` when the API is on a different domain than the frontend.
+The frontend build is generated through Vite and can be served from a static host or reverse proxy. The checked-in `frontend/.env.production` points production builds at the configured backend. On Render, set the frontend service's `VITE_API_BASE_URL` build environment variable to the backend origin if you use a different backend; Vite embeds it during the build, so changing it requires a redeploy. The backend's `FRONTEND_ORIGINS` must include the frontend origin.
 
 ### Run tests
 
